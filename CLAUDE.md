@@ -31,26 +31,24 @@ Name is TBD. Use "Guesstimate" as placeholder throughout codebase until finalize
 app/
   layout.tsx, page.tsx, globals.css
   api/question/today/route.ts
-  api/stats/route.ts
-  archive/page.tsx
-  about/page.tsx
 components/
   GameBoard.tsx, QuestionDisplay.tsx, GuessInput.tsx,
   GuessHistory.tsx, GuessRow.tsx, RevealScreen.tsx,
-  ShareButton.tsx, StatsModal.tsx, Header.tsx
+  GuessTimer.tsx, ReadyScreen.tsx,
+  ShareButton.tsx, Header.tsx
 lib/
-  db.ts, game-logic.ts, cookies.ts, share.ts
-  models/Question.ts, models/Session.ts
+  game-logic.ts, cookies.ts, share.ts, questions.ts
 hooks/
-  useGameState.ts, useStreak.ts
+  usePersistedGame.ts
 types/
   index.ts
-scripts/
-  seed-questions.ts, generate-questions.ts
 ```
 
 ## Game Logic (core rules)
 - 5 max guesses per daily question
+- 10-second countdown timer per guess (anti-cheat + excitement)
+- "I'm Ready" gate before first guess — player controls when clock starts
+- Timeout burns a guess (shown as ⏰ in history and share text)
 - Feedback thresholds: ✅ Exact (≤2% off) · 🔥 Hot (≤5%) · 🌡️ Warm (≤20%) · ❄️ Cold (>20%)
 - Always show directional hint: ⬆️ Higher or ⬇️ Lower (except on exact)
 - Input supports shorthand: 5k=5000, 2m=2000000, 1.5b=1500000000

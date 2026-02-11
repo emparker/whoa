@@ -8,26 +8,27 @@
 
 **Phase 1 (Core Game Loop): COMPLETE**
 **Phase 2 (Persistence & Bug Fixes): COMPLETE**
+**Phase 2.5 (Per-Guess Timer): COMPLETE**
 
-The core game loop compiles, renders, and plays end-to-end with hardcoded questions. No persistence — page refresh resets everything. Two rendering bugs identified. Page is fully client-rendered when the question is a perfect SSR candidate.
+Core game loop with cookie persistence, SSR, 10-second per-guess timer, and ReadyScreen gate. Hardcoded questions — no MongoDB yet.
 
 ### What's Working
 - Full play → feedback → reveal → share flow
+- 10-second per-guess countdown timer with color transitions
+- "I'm Ready" gate screen before first guess
+- Timeout handling (⏰ in guess history, share text, emoji trail)
+- Cookie persistence across page reloads (including timeout sentinel `-1`)
+- Server-side question rendering (`force-dynamic`)
+- Dev-mode `?date=` query param for testing any question
 - Feedback algorithm (exact/hot/warm/cold with directional hints)
 - Shorthand input parsing (5k, 2m, 1.5b)
-- Number formatting (K/M/B)
-- Spoiler-free emoji share text generation
-- All 4 animations (fadeIn, fadeSlideIn, popIn, shake)
-- Tailwind design system with all color tokens
-- Build passes cleanly (3.3kB page + 87kB shared JS)
+- Spoiler-free emoji share text with avg response time
+- All animations (fadeIn, fadeSlideIn, popIn, shake)
+- Build passes cleanly (5.2kB page + 87kB shared JS)
 
 ### What's Broken or Missing
-- **No persistence** — refreshing loses all game state (biggest gap)
-- **Progress bar invisible** — track color matches row background
-- **GuessRow border not rendering** — missing `border-style: solid`
 - **No "come back tomorrow"** — dead end after sharing
 - **Answer exposed in API response** — acceptable for MVP, documented tradeoff
-- **Entire page is client-rendered** — loading spinner instead of instant content
 - **No accessibility** — no ARIA labels, no focus management, no screen reader support
 
 ---
@@ -66,7 +67,7 @@ interface CookieGameState {
 }
 ```
 
-Single-letter keys keep size under 250 bytes. Feedback is derived data — recompute from `getFeedback(guess, answer)` on hydration.
+Single-letter keys keep size under 250 bytes. Feedback is derived data — recompute from `getFeedback(guess, answer)` on hydration. A value of `-1` in the `g` array represents a timed-out guess.
 
 ### Hydration States
 
@@ -237,7 +238,7 @@ Every question must pass the "wait, WHAT?" test. A single boring question breaks
 | Cookie persistence done wrong forces GameBoard rewrite | **High** | Define cookie schema + hydration flow before coding. Handle all 5 states. | Schema designed above |
 | Timezone mismatch between server and client | **High** | UTC everywhere. Server date in API response is canonical. | Decision locked |
 | 30-question runway runs out (~1 month) | **Medium** | Start Phase 6 content pipeline before day 20. Monitor buffer. | 30 questions ready |
-| Progress bar / border bugs erode perceived quality | **Low** | Fix in Phase 2A before any user testing. | Identified, not fixed |
+| Progress bar / border bugs erode perceived quality | **Low** | Fix in Phase 2A before any user testing. | Fixed in Phase 2 |
 | `navigator.clipboard` fails in in-app browsers (Instagram, Twitter) | **Medium** | Web Share API fallback on mobile in Phase 4. | Not yet implemented |
 | MongoDB cold starts on Vercel (500-1500ms first request) | **Low** | Connection singleton caches across invocations. Cron ping if needed. | Architecture designed |
 | Answer visible in DevTools / network tab | **Low** | Accepted MVP tradeoff. No prizes to protect. Harden later if needed. | Decision locked |
@@ -247,15 +248,16 @@ Every question must pass the "wait, WHAT?" test. A single boring question breaks
 
 ## File Inventory
 
-### Exists (Phase 1 Complete)
+### Exists (Through Phase 2.5)
 ```
 app/layout.tsx, page.tsx, globals.css
 app/api/question/today/route.ts
 components/GameBoard.tsx, QuestionDisplay.tsx, GuessInput.tsx
 components/GuessHistory.tsx, GuessRow.tsx, RevealScreen.tsx
+components/GuessTimer.tsx, ReadyScreen.tsx
 components/ShareButton.tsx, Header.tsx
-lib/game-logic.ts, share.ts
-hooks/useGameState.ts
+lib/game-logic.ts, share.ts, cookies.ts, questions.ts
+hooks/usePersistedGame.ts
 types/index.ts
 docs/claude-project-knowledge.md, docs/game-prototype.tsx, docs/roadmap.md
 tailwind.config.ts, tsconfig.json, postcss.config.js
@@ -264,7 +266,6 @@ next.config.js, .eslintrc.json, package.json, CLAUDE.md
 
 ### To Be Created
 ```
-Phase 2:  lib/cookies.ts, hooks/usePersistedGame.ts
 Phase 3:  lib/db.ts, lib/models/Question.ts, scripts/seed-questions.ts
 Phase 4:  (modifications to existing files)
 Phase 5:  components/StatsModal.tsx, hooks/useStreak.ts, public/og-image.png,

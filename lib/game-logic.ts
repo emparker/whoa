@@ -1,6 +1,7 @@
 import { Feedback } from "@/types";
 
 export const MAX_GUESSES = 5;
+export const GUESS_TIMER_MS = 10000;
 
 export function getFeedback(
   guess: number,

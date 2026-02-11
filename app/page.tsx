@@ -2,8 +2,17 @@ import Header from "@/components/Header";
 import GameBoard from "@/components/GameBoard";
 import { getTodayQuestion } from "@/lib/questions";
 
-export default function Home() {
-  const question = getTodayQuestion();
+interface HomeProps {
+  searchParams: Promise<{ date?: string }>;
+}
+
+export const dynamic = "force-dynamic";
+
+export default async function Home({ searchParams }: HomeProps) {
+  const params = await searchParams;
+  const dateOverride =
+    process.env.NODE_ENV === "development" ? params.date : undefined;
+  const question = getTodayQuestion(dateOverride);
 
   return (
     <main className="min-h-screen flex flex-col items-center">

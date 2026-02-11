@@ -25,6 +25,19 @@ interface GuessRowProps {
 }
 
 export default function GuessRow({ guess }: GuessRowProps) {
+  if (guess.timedOut) {
+    return (
+      <div className="flex items-center gap-3 px-3.5 py-2.5 bg-bg-secondary rounded-[10px] border border-border animate-fadeSlideIn">
+        <span className="text-[22px] w-8 text-center">⏰</span>
+        <div className="flex-1">
+          <span className="text-sm font-medium text-text-dim">
+            Time&apos;s up!
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   const { value, feedback, pctOff } = guess;
 
   return (

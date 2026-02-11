@@ -7,12 +7,14 @@ interface GuessInputProps {
   onGuess: (value: number) => void;
   disabled: boolean;
   showHint: boolean;
+  focusTrigger?: number;
 }
 
 export default function GuessInput({
   onGuess,
   disabled,
   showHint,
+  focusTrigger = 0,
 }: GuessInputProps) {
   const [input, setInput] = useState("");
   const [shaking, setShaking] = useState(false);
@@ -20,7 +22,7 @@ export default function GuessInput({
 
   useEffect(() => {
     if (!disabled && inputRef.current) inputRef.current.focus();
-  }, [disabled]);
+  }, [disabled, focusTrigger]);
 
   const handleSubmit = () => {
     const num = parseInput(input);

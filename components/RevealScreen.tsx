@@ -62,7 +62,7 @@ export default function RevealScreen({
             className="animate-popIn [animation-fill-mode:both]"
             style={{ animationDelay: `${i * 0.1}s` }}
           >
-            {g.feedback.emoji}
+            {g.timedOut ? "⏰" : g.feedback.emoji}
           </span>
         ))}
         {!solved && (

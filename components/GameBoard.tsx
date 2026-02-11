@@ -1,11 +1,14 @@
 "use client";
 
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Question } from "@/types";
-import { MAX_GUESSES } from "@/lib/game-logic";
+import { MAX_GUESSES, GUESS_TIMER_MS } from "@/lib/game-logic";
 import { usePersistedGame } from "@/hooks/usePersistedGame";
 import QuestionDisplay from "./QuestionDisplay";
 import GuessHistory from "./GuessHistory";
 import GuessInput from "./GuessInput";
+import GuessTimer from "./GuessTimer";
+import ReadyScreen from "./ReadyScreen";
 import RevealScreen from "./RevealScreen";
 
 interface GameBoardProps {
@@ -19,8 +22,72 @@ export default function GameBoard({ question }: GameBoardProps) {
     solved,
     gameOver,
     handleGuess,
+    handleTimeout,
+    handleReady,
     handleReveal,
   } = usePersistedGame(question);
+
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [focusTrigger, setFocusTrigger] = useState(0);
+  const timerStartRef = useRef<number>(0);
+  const delayRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const startTimer = useCallback(() => {
+    setTimerRunning(true);
+    timerStartRef.current = Date.now();
+    setFocusTrigger((n) => n + 1);
+  }, []);
+
+  const stopTimer = useCallback(() => {
+    setTimerRunning(false);
+    if (delayRef.current) {
+      clearTimeout(delayRef.current);
+      delayRef.current = undefined;
+    }
+  }, []);
+
+  // Timer lifecycle: start after each guess or after ready
+  useEffect(() => {
+    if (screen !== "play" || gameOver) {
+      stopTimer();
+      return;
+    }
+
+    // Delay before starting timer: 300ms after ready, 500ms between guesses
+    const delay = guesses.length === 0 ? 300 : 500;
+    delayRef.current = setTimeout(startTimer, delay);
+
+    return () => {
+      if (delayRef.current) {
+        clearTimeout(delayRef.current);
+        delayRef.current = undefined;
+      }
+    };
+  }, [guesses.length, screen, gameOver, startTimer, stopTimer]);
+
+  const onGuessWithTime = useCallback(
+    (value: number) => {
+      const responseTime = Date.now() - timerStartRef.current;
+      stopTimer();
+      handleGuess(value, responseTime);
+    },
+    [handleGuess, stopTimer]
+  );
+
+  const onTimeout = useCallback(() => {
+    stopTimer();
+    handleTimeout();
+  }, [handleTimeout, stopTimer]);
+
+  if (screen === "ready") {
+    return (
+      <ReadyScreen
+        questionNumber={question.questionNumber}
+        category={question.category}
+        onReady={handleReady}
+      />
+    );
+  }
 
   if (screen === "reveal") {
     return (
@@ -44,10 +111,19 @@ export default function GameBoard({ question }: GameBoardProps) {
         <GuessHistory guesses={guesses} />
       </div>
 
+      <div className="mb-3">
+        <GuessTimer
+          running={timerRunning}
+          durationMs={GUESS_TIMER_MS}
+          onTimeout={onTimeout}
+        />
+      </div>
+
       <GuessInput
-        onGuess={handleGuess}
-        disabled={gameOver}
+        onGuess={onGuessWithTime}
+        disabled={gameOver || !timerRunning}
         showHint={guesses.length === 0}
+        focusTrigger={focusTrigger}
       />
 
       {gameOver && screen === "play" && (

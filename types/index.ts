@@ -37,17 +37,25 @@ export interface Feedback {
   direction: Direction | null;
 }
 
-export interface Guess {
-  value: number;
-  feedback: Feedback;
-  pctOff: number;
+interface GuessBase {
+  responseTime: number;
   timestamp: number;
 }
 
-export type GameResult = "playing" | "win" | "loss";
-
-export interface GameState {
-  date: string;
-  guesses: Guess[];
-  result: GameResult;
+export interface ActiveGuess extends GuessBase {
+  timedOut: false;
+  value: number;
+  feedback: Feedback;
+  pctOff: number;
 }
+
+export interface TimedOutGuess extends GuessBase {
+  timedOut: true;
+  value: null;
+  feedback: null;
+  pctOff: null;
+}
+
+export type Guess = ActiveGuess | TimedOutGuess;
+
+export type GameResult = "playing" | "win" | "loss";

@@ -1,18 +1,14 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Question, Guess, GameResult } from "@/types";
-import { getFeedback, getPctOff, MAX_GUESSES } from "@/lib/game-logic";
+import { Question, Guess, ActiveGuess, TimedOutGuess, GameResult } from "@/types";
+import { getFeedback, getPctOff, MAX_GUESSES, GUESS_TIMER_MS } from "@/lib/game-logic";
 import {
   CookieGameState,
   getGameState,
   setGameState,
   genVisitorId,
 } from "@/lib/cookies";
-
-function getTodayUTC(): string {
-  return new Date().toISOString().split("T")[0];
-}
 
 function wasYesterday(dateStr: string): boolean {
   const d = new Date(dateStr + "T00:00:00Z");
@@ -27,18 +23,32 @@ function rehydrateGuesses(
   hotRange?: number,
   warmRange?: number
 ): Guess[] {
-  return rawValues.map((value) => ({
-    value,
-    feedback: getFeedback(value, answer, hotRange, warmRange),
-    pctOff: getPctOff(value, answer),
-    timestamp: 0,
-  }));
+  return rawValues.map((value) => {
+    if (value === -1) {
+      return {
+        timedOut: true,
+        value: null,
+        feedback: null,
+        pctOff: null,
+        responseTime: GUESS_TIMER_MS,
+        timestamp: 0,
+      } as TimedOutGuess;
+    }
+    return {
+      timedOut: false,
+      value,
+      feedback: getFeedback(value, answer, hotRange, warmRange),
+      pctOff: getPctOff(value, answer),
+      responseTime: 0,
+      timestamp: 0,
+    } as ActiveGuess;
+  });
 }
 
 interface PersistedGameState {
   guesses: Guess[];
   result: GameResult;
-  screen: "play" | "reveal";
+  screen: "ready" | "play" | "reveal";
   streak: number;
   longestStreak: number;
   gamesPlayed: number;
@@ -48,7 +58,7 @@ export function usePersistedGame(question: Question) {
   const [state, setState] = useState<PersistedGameState>({
     guesses: [],
     result: "playing",
-    screen: "play",
+    screen: "ready",
     streak: 0,
     longestStreak: 0,
     gamesPlayed: 0,
@@ -57,7 +67,7 @@ export function usePersistedGame(question: Question) {
 
   // Hydrate from cookie on mount
   useEffect(() => {
-    const today = getTodayUTC();
+    const questionDate = question.date;
     const saved = getGameState();
 
     let visitorId = saved?.v ?? genVisitorId();
@@ -66,12 +76,12 @@ export function usePersistedGame(question: Question) {
     let gamesPlayed = saved?.gp ?? 0;
 
     // Handle the 5 hydration states
-    if (saved && saved.d === today) {
+    if (saved && saved.d === questionDate) {
       // Same day — restore state
       const guesses = rehydrateGuesses(saved.g, question.answer, question.hotRange, question.warmRange);
       const result: GameResult =
         saved.r === "w" ? "win" : saved.r === "l" ? "loss" : "playing";
-      const screen = result !== "playing" ? "reveal" : "play";
+      const screen = result !== "playing" ? "reveal" : guesses.length > 0 ? "play" : "ready";
 
       cookieRef.current = saved;
       setState({ guesses, result, screen, streak, longestStreak, gamesPlayed });
@@ -81,7 +91,6 @@ export function usePersistedGame(question: Question) {
     // Different day or no cookie — check streak continuity
     if (saved && saved.ld) {
       if (!wasYesterday(saved.ld)) {
-        // Streak broken
         streak = 0;
       }
     }
@@ -89,7 +98,7 @@ export function usePersistedGame(question: Question) {
     // Start fresh game
     const fresh: CookieGameState = {
       v: visitorId,
-      d: today,
+      d: questionDate,
       g: [],
       r: "p",
       sk: streak,
@@ -102,18 +111,43 @@ export function usePersistedGame(question: Question) {
     setState({
       guesses: [],
       result: "playing",
-      screen: "play",
+      screen: "ready",
       streak,
       longestStreak,
       gamesPlayed,
     });
-  }, [question.answer]);
+  }, [question.date, question.answer, question.hotRange, question.warmRange]);
+
+  const writeCookie = useCallback(
+    (newGuesses: Guess[], newResult: GameResult, sk: number, sl: number, gp: number) => {
+      const cookie: CookieGameState = {
+        v: cookieRef.current?.v ?? genVisitorId(),
+        d: question.date,
+        g: newGuesses.map((g) => (g.timedOut ? -1 : g.value)),
+        r: newResult === "win" ? "w" : newResult === "loss" ? "l" : "p",
+        sk,
+        sl,
+        gp,
+        ld: newResult !== "playing" ? question.date : cookieRef.current?.ld ?? "",
+      };
+      cookieRef.current = cookie;
+      setGameState(cookie);
+    },
+    [question.date]
+  );
 
   const handleGuess = useCallback(
-    (value: number) => {
+    (value: number, responseTime: number) => {
       const feedback = getFeedback(value, question.answer, question.hotRange, question.warmRange);
       const pctOff = getPctOff(value, question.answer);
-      const guess: Guess = { value, feedback, pctOff, timestamp: Date.now() };
+      const guess: ActiveGuess = {
+        timedOut: false,
+        value,
+        feedback,
+        pctOff,
+        responseTime,
+        timestamp: Date.now(),
+      };
 
       setState((prev) => {
         const newGuesses = [...prev.guesses, guess];
@@ -140,22 +174,7 @@ export function usePersistedGame(question: Question) {
           }, 600);
         }
 
-        // Write cookie
-        const cookie: CookieGameState = {
-          v: cookieRef.current?.v ?? genVisitorId(),
-          d: getTodayUTC(),
-          g: newGuesses.map((g) => g.value),
-          r: newResult === "win" ? "w" : newResult === "loss" ? "l" : "p",
-          sk,
-          sl,
-          gp,
-          ld:
-            newResult !== "playing"
-              ? getTodayUTC()
-              : cookieRef.current?.ld ?? "",
-        };
-        cookieRef.current = cookie;
-        setGameState(cookie);
+        writeCookie(newGuesses, newResult, sk, sl, gp);
 
         return {
           guesses: newGuesses,
@@ -167,8 +186,52 @@ export function usePersistedGame(question: Question) {
         };
       });
     },
-    [question.answer]
+    [question.answer, question.hotRange, question.warmRange, writeCookie]
   );
+
+  const handleTimeout = useCallback(() => {
+    const guess: TimedOutGuess = {
+      timedOut: true,
+      value: null,
+      feedback: null,
+      pctOff: null,
+      responseTime: GUESS_TIMER_MS,
+      timestamp: Date.now(),
+    };
+
+    setState((prev) => {
+      const newGuesses = [...prev.guesses, guess];
+      let newResult: GameResult = "playing";
+      let newScreen = prev.screen;
+      let sk = prev.streak;
+      let sl = prev.longestStreak;
+      let gp = prev.gamesPlayed;
+
+      if (newGuesses.length >= MAX_GUESSES) {
+        newResult = "loss";
+        sk = 0;
+        gp += 1;
+        setTimeout(() => {
+          setState((s) => ({ ...s, screen: "reveal" }));
+        }, 600);
+      }
+
+      writeCookie(newGuesses, newResult, sk, sl, gp);
+
+      return {
+        guesses: newGuesses,
+        result: newResult,
+        screen: newScreen,
+        streak: sk,
+        longestStreak: sl,
+        gamesPlayed: gp,
+      };
+    });
+  }, [writeCookie]);
+
+  const handleReady = useCallback(() => {
+    setState((prev) => ({ ...prev, screen: "play" }));
+  }, []);
 
   const handleReveal = useCallback(() => {
     setState((prev) => ({ ...prev, screen: "reveal" }));
@@ -184,6 +247,8 @@ export function usePersistedGame(question: Question) {
     solved: state.result === "win",
     gameOver: state.result !== "playing",
     handleGuess,
+    handleTimeout,
+    handleReady,
     handleReveal,
   };
 }

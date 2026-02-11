@@ -376,8 +376,8 @@ const QUESTIONS: Omit<Question, "_id">[] = [
   },
 ];
 
-export function getTodayQuestion(): Question {
-  const today = new Date().toISOString().split("T")[0];
+export function getTodayQuestion(dateOverride?: string): Question {
+  const today = dateOverride || new Date().toISOString().split("T")[0];
 
   let question = QUESTIONS.find((q) => q.date === today);
 

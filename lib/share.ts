@@ -9,10 +9,35 @@ export function generateShareText(
   unit: string,
   url: string
 ): string {
-  const emojis = guesses.map((g) => g.feedback.emoji).join(" ");
+  const emojis = guesses
+    .map((g) => (g.timedOut ? "⏰" : g.feedback.emoji))
+    .join(" ");
   const result = solved ? emojis : `${emojis} ❌`;
-  const firstOff = guesses[0]
-    ? Math.abs(guesses[0].value - answer)
-    : 0;
-  return `🎯 Guesstimate #${questionNum}\n\n${result}\n\nOff by ${formatNum(firstOff)} ${unit} at first 😅\n${url}`;
+
+  const lines: string[] = [
+    `🎯 Guesstimate #${questionNum}`,
+    "",
+    result,
+    "",
+  ];
+
+  // Avg response time (only for non-timed-out guesses with real response times)
+  const validTimes = guesses
+    .filter((g) => !g.timedOut && g.responseTime > 0)
+    .map((g) => g.responseTime);
+  if (validTimes.length > 0) {
+    const avg = validTimes.reduce((a, b) => a + b, 0) / validTimes.length;
+    lines.push(`Avg response: ${(avg / 1000).toFixed(1)}s`);
+  }
+
+  // "Off by" line — use first non-timed-out guess
+  const firstReal = guesses.find((g) => !g.timedOut);
+  if (firstReal) {
+    const firstOff = Math.abs(firstReal.value - answer);
+    lines.push(`Off by ${formatNum(firstOff)} ${unit} at first 😅`);
+  }
+
+  lines.push(url);
+
+  return lines.join("\n");
 }
