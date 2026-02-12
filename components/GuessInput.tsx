@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { parseInput } from "@/lib/game-logic";
+
+type Suffix = "k" | "m" | "b";
 
 interface GuessInputProps {
   onGuess: (value: number) => void;
@@ -10,6 +12,12 @@ interface GuessInputProps {
   focusTrigger?: number;
 }
 
+const SUFFIXES: { key: Suffix; label: string; desc: string }[] = [
+  { key: "k", label: "K", desc: "thousand" },
+  { key: "m", label: "M", desc: "million" },
+  { key: "b", label: "B", desc: "billion" },
+];
+
 export default function GuessInput({
   onGuess,
   disabled,
@@ -17,6 +25,7 @@ export default function GuessInput({
   focusTrigger = 0,
 }: GuessInputProps) {
   const [input, setInput] = useState("");
+  const [suffix, setSuffix] = useState<Suffix | null>(null);
   const [shaking, setShaking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -24,8 +33,23 @@ export default function GuessInput({
     if (!disabled && inputRef.current) inputRef.current.focus();
   }, [disabled, focusTrigger]);
 
+  // Combine typed input with selected suffix for parsing
+  const resolvedInput = useMemo(() => {
+    const trimmed = input.trim().toLowerCase();
+    const hasLetterSuffix = /[kmbt]$/i.test(trimmed);
+    return suffix && !hasLetterSuffix ? input + suffix : input;
+  }, [input, suffix]);
+
+  // Live preview of expanded number
+  const preview = useMemo(() => {
+    if (!input.trim()) return null;
+    const num = parseInput(resolvedInput);
+    if (num === null || num < 0 || isNaN(num)) return null;
+    return num.toLocaleString();
+  }, [input, resolvedInput]);
+
   const handleSubmit = () => {
-    const num = parseInput(input);
+    const num = parseInput(resolvedInput);
     if (num === null || num < 0 || isNaN(num)) {
       setShaking(true);
       setTimeout(() => setShaking(false), 500);
@@ -45,6 +69,11 @@ export default function GuessInput({
     }, 300);
   };
 
+  const toggleSuffix = (s: Suffix) => {
+    setSuffix((prev) => (prev === s ? null : s));
+    inputRef.current?.focus();
+  };
+
   if (disabled) return null;
 
   return (
@@ -59,7 +88,7 @@ export default function GuessInput({
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={handleFocus}
-          placeholder="Enter a number (e.g. 42, 5k, 1.2m)"
+          placeholder="Enter a number"
           className="flex-1 px-4 py-3.5 text-base bg-bg-primary border-2 border-border rounded-[10px] text-text-primary outline-none transition-colors focus:border-accent"
         />
         <button
@@ -73,10 +102,48 @@ export default function GuessInput({
           Guess
         </button>
       </div>
+
+      {/* Magnitude suffix buttons */}
+      <div className="flex items-center gap-2.5 mt-2.5">
+        {SUFFIXES.map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => toggleSuffix(key)}
+            className={`px-5 py-2 min-h-[44px] min-w-[52px] text-sm font-semibold rounded-lg transition-all active:scale-95 ${
+              suffix === key
+                ? "text-white shadow-md"
+                : "bg-bg-primary border border-border text-text-secondary hover:border-accent"
+            }`}
+            style={
+              suffix === key
+                ? { background: "linear-gradient(135deg, #6366F1, #8B5CF6)" }
+                : undefined
+            }
+            aria-pressed={suffix === key}
+            aria-label={`${label} multiplier`}
+          >
+            {label}
+          </button>
+        ))}
+        {suffix && (
+          <span className="text-xs text-text-dim ml-0.5 animate-fadeIn">
+            {SUFFIXES.find((s) => s.key === suffix)?.desc}
+          </span>
+        )}
+      </div>
+
+      {/* Live preview of expanded value */}
+      {preview && suffix && (
+        <div className="text-center text-sm text-text-secondary mt-1.5 animate-fadeIn">
+          = {preview}
+        </div>
+      )}
+
+      {/* First-guess hint */}
       {showHint && (
-        <div className="text-center text-xs text-text-dim mt-3">
-          💡 Shortcuts: 5k = 5,000 &middot; 2m = 2,000,000 &middot; 1.5b =
-          1,500,000,000
+        <div className="text-center text-xs text-text-dim mt-2.5">
+          Tap K, M, or B to set magnitude — no need to type zeros
         </div>
       )}
     </div>

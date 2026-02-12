@@ -147,9 +147,9 @@ Single-letter keys keep size under 250 bytes. Feedback is derived data — recom
 Extracted from the original Phase 3. Deployment was decoupled from MongoDB because 30 hardcoded questions are sufficient for soft launch.
 
 - [x] **Verify production build locally** — `npm run build && npm run start`
-- [ ] **Create Vercel project** — connect GitHub repo, no env vars needed
-- [ ] **Deploy to Vercel** — push to `main`, auto-deploy
-- [ ] **Production smoke test** — game loads, timer works, cookies persist, share works
+- [x] **Create Vercel project** — connected GitHub repo, Hobby plan, no env vars
+- [x] **Deploy to Vercel** — live at whoa-gold.vercel.app
+- [x] **Production smoke test** — page loads, API returns valid JSON, no errors
 - [ ] **Test on real mobile devices** — iOS Safari, Chrome Android
 
 **Done when:** Game runs on a live `.vercel.app` URL and works on real phones.
