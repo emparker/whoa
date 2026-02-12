@@ -15,7 +15,7 @@ export function generateShareText(
   const result = solved ? emojis : `${emojis} ❌`;
 
   const lines: string[] = [
-    `🎯 Guesstimate #${questionNum}`,
+    `🎯 Whoa! #${questionNum}`,
     "",
     result,
     "",

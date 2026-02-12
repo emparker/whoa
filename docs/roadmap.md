@@ -1,4 +1,4 @@
-# Guesstimate — Development Roadmap & Status Tracker
+# Whoa! — Development Roadmap & Status Tracker
 
 > Living document. Update checkboxes and status as work progresses.
 
@@ -9,8 +9,10 @@
 **Phase 1 (Core Game Loop): COMPLETE**
 **Phase 2 (Persistence & Bug Fixes): COMPLETE**
 **Phase 2.5 (Per-Guess Timer): COMPLETE**
+**Phase 4 (Polish & Mobile UX): COMPLETE**
+**Next up: Phase 3A (Deploy) → Soft Launch → Phase 3B (MongoDB)**
 
-Core game loop with cookie persistence, SSR, 10-second per-guess timer, and ReadyScreen gate. Hardcoded questions — no MongoDB yet.
+Core game loop with cookie persistence, SSR, 10-second per-guess timer, ReadyScreen gate, countdown timer, accessibility, and animations. Hardcoded questions — no MongoDB yet.
 
 ### What's Working
 - Full play → feedback → reveal → share flow
@@ -24,12 +26,53 @@ Core game loop with cookie persistence, SSR, 10-second per-guess timer, and Read
 - Shorthand input parsing (5k, 2m, 1.5b)
 - Spoiler-free emoji share text with avg response time
 - All animations (fadeIn, fadeSlideIn, popIn, shake)
-- Build passes cleanly (5.2kB page + 87kB shared JS)
+- "Come back tomorrow" countdown timer on reveal screen
+- Native share sheet (`navigator.share`) with clipboard fallback
+- Progress bar fill animation (animates from 0 on mount)
+- Full accessibility: ARIA live regions, labels, focus management, semantic HTML
+- Safe area insets, viewport zoom prevention, mobile scroll-into-view
+- Build passes cleanly (5.8kB page + 87kB shared JS)
 
 ### What's Broken or Missing
-- **No "come back tomorrow"** — dead end after sharing
 - **Answer exposed in API response** — acceptable for MVP, documented tradeoff
-- **No accessibility** — no ARIA labels, no focus management, no screen reader support
+- **Gradient utilities not extracted** — low priority, deferred
+
+---
+
+## Launch Strategy
+
+**Soft launch first, public launch later.**
+
+The original Phase 3 was split: deployment (3A) was extracted and moved ahead of UX polish (Phase 4). MongoDB (3B) was deferred — 30 hardcoded questions provide sufficient runway for soft launch validation.
+
+### Rationale
+- 30 hardcoded questions = 30-day content runway, no DB needed yet
+- UX polish (Phase 4) has higher user impact than infrastructure (Phase 3B)
+- Soft launch audience (friends/family) will forgive a `.vercel.app` URL but not a janky mobile experience
+- "Come back tomorrow" countdown and `navigator.share()` are the two highest-impact missing features for retention and virality
+
+### Execution Order
+
+| Step | Phase | Milestone |
+|------|-------|-----------|
+| 1 | **3A — Deploy** | Live URL on Vercel, real-device testing |
+| 2 | **4 — Polish & Mobile UX** | Countdown timer, native share, accessibility, mobile fixes |
+| 3 | **Soft Launch** | Share with friends & family (~20-50 people), gather feedback |
+| 4 | **3B — MongoDB** | Real database, caching, rate limiting, content scalability |
+| 5 | **5 — Stickiness** | Stats modal, OG images, streaks, PWA manifest |
+| 6 | **Public Launch** | Product Hunt, social media, full infrastructure in place |
+
+### Soft Launch vs. Public Launch
+- **Soft launch** = controlled distribution. You send the link to people you know. The app is technically accessible to anyone with the URL, but not discoverable (no SEO pages, no OG images, no public promotion).
+- **Public launch** = active promotion. Product Hunt, social posts, press. First impressions are final — the app must be polished, infrastructure must be solid, and link previews must be compelling.
+
+### Content Runway
+30 hardcoded questions start burning on deploy day. MongoDB (Phase 3B) and the content pipeline (Phase 6) must be operational before day ~20 to ensure no gaps. Monitor this actively after soft launch.
+
+### Detailed TODO Plans
+- [`docs/TODOs/phase-3a-deploy-to-vercel.md`](TODOs/phase-3a-deploy-to-vercel.md)
+- [`docs/TODOs/phase-4-polish-and-mobile-ux.md`](TODOs/phase-4-polish-and-mobile-ux.md)
+- [`docs/TODOs/phase-3b-mongodb-and-real-content.md`](TODOs/phase-3b-mongodb-and-real-content.md)
 
 ---
 
@@ -40,7 +83,7 @@ These decisions were evaluated by architecture, frontend, and backend specialist
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Timezone | **UTC everywhere** | Simpler, Wordle precedent. Server already uses UTC. All question dates are UTC. A user in Hawaii at 10pm sees "tomorrow's" question — this is acceptable and matches Wordle behavior. |
-| Cookie vs localStorage | **Cookies only** | Per CLAUDE.md. Single JSON cookie (`guesstimate_state`), ~200 bytes. Store raw guess values, recompute feedback on hydration. |
+| Cookie vs localStorage | **Cookies only** | Per CLAUDE.md. Single JSON cookie (`whoa_state`), ~200 bytes. Store raw guess values, recompute feedback on hydration. |
 | Answer delivery | **Send answer with question** | MVP tradeoff. Client-side only. Determined cheaters will always find it. No prizes or leaderboard to protect. Harden in a later phase if needed. |
 | Server vs client rendering | **Server Component for page, client for GameBoard** | Question data is the same for all users per day — perfect SSR candidate. Eliminates loading spinner, improves LCP, reduces client JS. |
 | Session model | **Skip for MVP** | All state in cookies. Server-side sessions add write overhead with no benefit until aggregate analytics ("closer than 84% of players") in Phase 6. |
@@ -52,7 +95,7 @@ These decisions were evaluated by architecture, frontend, and backend specialist
 
 ## Cookie Schema
 
-Compact JSON stored in a single `guesstimate_state` cookie:
+Compact JSON stored in a single `whoa_state` cookie:
 
 ```typescript
 interface CookieGameState {
@@ -98,22 +141,88 @@ Single-letter keys keep size under 250 bytes. Feedback is derived data — recom
 
 ---
 
-### Phase 3: MongoDB & Real Content
-> Goal: Connect to real database, seed the 30 questions, deploy.
+### Phase 3A: Deploy to Vercel (Hardcoded Questions)
+> Goal: Get a live URL for real-device testing. No MongoDB needed.
 
-- [ ] **3A. Install mongoose** — add to dependencies
-- [ ] **3A. Create `lib/db.ts`** — connection singleton with global caching for serverless
-- [ ] **3A. Create `lib/models/Question.ts`** — Mongoose schema with `{ date: 1 }` unique index, `{ questionNumber: 1 }` unique index
-- [ ] **3B. Create `scripts/seed-questions.ts`** — upsert by date, validates no duplicate dates, sequential question numbers
-- [ ] **3B. Add `tsx` dev dependency** and `"seed"` script to package.json
-- [ ] **3B. Seed 30 questions** — run against Atlas cluster, verify in Compass
-- [ ] **3C. Refactor `app/api/question/today/route.ts`** — query MongoDB instead of hardcoded array, add fallback for missing dates
-- [ ] **3C. Add Cache-Control header** — cache until midnight UTC
-- [ ] **3C. Add rate limiter** — 30 req/min per IP, in-memory Map
-- [ ] **3D. Set up Vercel project** — add `MONGODB_URI` env var
-- [ ] **3D. Deploy to Vercel** — verify date logic, question delivery, cookie persistence in production
+Extracted from the original Phase 3. Deployment was decoupled from MongoDB because 30 hardcoded questions are sufficient for soft launch.
 
-**Done when:** Game runs on a real URL with real questions from MongoDB. 30 days of content seeded.
+- [x] **Verify production build locally** — `npm run build && npm run start`
+- [ ] **Create Vercel project** — connect GitHub repo, no env vars needed
+- [ ] **Deploy to Vercel** — push to `main`, auto-deploy
+- [ ] **Production smoke test** — game loads, timer works, cookies persist, share works
+- [ ] **Test on real mobile devices** — iOS Safari, Chrome Android
+
+**Done when:** Game runs on a live `.vercel.app` URL and works on real phones.
+
+See [`docs/TODOs/phase-3a-deploy-to-vercel.md`](TODOs/phase-3a-deploy-to-vercel.md) for full implementation details.
+
+---
+
+### Phase 4: Polish & Mobile UX
+> Goal: Go from "works" to "feels great on a phone." Last phase before soft launch.
+
+Moved ahead of Phase 3B (MongoDB). All work is client-side — no infrastructure dependencies.
+
+**High impact:**
+- [x] Add "come back tomorrow" countdown timer on RevealScreen
+- [x] Web Share API on mobile (`navigator.share`) with clipboard fallback *(done in Phase 2)*
+- [x] Fix progress bar fill animation — mount at `width: 0`, animate to target via `useEffect`
+- [x] Add `fadeSlideIn` entrance animation on "See the Answer" button
+- [x] Scroll input into view after each guess on mobile *(done in Phase 2)*
+- [x] Add `navigator.clipboard` error handling with try/catch *(done in Phase 2)*
+
+**Accessibility:**
+- [x] `aria-live="polite"` + `role="log"` on guess history container
+- [x] `aria-label="Enter your guess"` on input field
+- [x] `role="img"` + `aria-label` on all emoji spans (feedback + trail)
+- [x] Focus management: move focus to heading on play → reveal transition
+- [x] Change `Header.tsx` wrapper from `<div>` to `<header>`
+- [x] Add `type="button"` to all non-form buttons *(already present)*
+- [x] Add `role="progressbar"` + `aria-valuenow` to ProgressBar
+
+**Mobile polish:**
+- [x] Safe-area inset padding for iPhone home indicator (`env(safe-area-inset-bottom)`) *(done in Phase 2)*
+- [x] Test `inputMode="decimal"` vs `"text"` — using `decimal` *(done in Phase 2)*
+- [x] Viewport `user-scalable=no` to prevent accidental zoom *(done in Phase 2)*
+- [ ] Extract repeated gradient `background` styles to Tailwind utilities *(deferred — low impact)*
+
+**Done when:** Game feels native-app smooth on iOS Safari and Chrome Android. Screen reader can play the full game.
+
+See [`docs/TODOs/phase-4-polish-and-mobile-ux.md`](TODOs/phase-4-polish-and-mobile-ux.md) for full implementation details.
+
+---
+
+### Soft Launch Checkpoint
+> Gate: Do not proceed to public launch until soft launch feedback is incorporated.
+
+- [ ] Share URL with friends & family (~20-50 people)
+- [ ] Collect feedback for at least 1 week of daily play
+- [ ] Key signals to watch: Do they share? Do they come back day 2? What confuses them?
+- [ ] Fix critical issues surfaced by real users
+- [ ] Proceed to Phase 3B
+
+---
+
+### Phase 3B: MongoDB & Real Content
+> Goal: Migrate from hardcoded questions to MongoDB. Add caching and rate limiting.
+
+Deferred from the original Phase 3. Not needed until content runway (~30 days from deploy) starts running low.
+
+- [ ] **Install mongoose** — add to dependencies
+- [ ] **Create `lib/db.ts`** — connection singleton with global caching for serverless
+- [ ] **Create `lib/models/Question.ts`** — Mongoose schema with `{ date: 1 }` unique index, `{ questionNumber: 1 }` unique index
+- [ ] **Create `scripts/seed-questions.ts`** — upsert by date, validates no duplicate dates, sequential question numbers
+- [ ] **Add `tsx` dev dependency** and `"seed"` script to package.json
+- [ ] **Seed 30 questions** — run against Atlas cluster, verify in Compass
+- [ ] **Refactor `app/api/question/today/route.ts`** — query MongoDB instead of hardcoded array, add fallback for missing dates
+- [ ] **Add Cache-Control header** — cache until midnight UTC
+- [ ] **Add rate limiter** — 30 req/min per IP, in-memory Map
+- [ ] **Add `MONGODB_URI` env var** to Vercel dashboard
+- [ ] **Redeploy and verify** — question delivery from DB, cache headers, rate limiting
+
+**Done when:** Game serves questions from MongoDB with caching and rate limiting. Hardcoded fallback still works if DB is down.
+
+See [`docs/TODOs/phase-3b-mongodb-and-real-content.md`](TODOs/phase-3b-mongodb-and-real-content.md) for full implementation details and patterns.
 
 #### Implementation Patterns (get these wrong and things break)
 
@@ -143,36 +252,6 @@ Use `findOneAndUpdate({ date: q.date }, { $set: q }, { upsert: true })` — not 
 - All dates are unique (no two questions on the same day)
 - Dates are contiguous from launch day (no gaps that cause 404s)
 - `questionNumber` values are sequential (1 through 30)
-
----
-
-### Phase 4: Polish & Mobile UX
-> Goal: Go from "works" to "feels great on a phone."
-
-**High impact:**
-- [ ] Add "come back tomorrow" countdown timer on RevealScreen
-- [ ] Web Share API on mobile (`navigator.share`) with clipboard fallback
-- [ ] Fix progress bar fill animation — mount at `width: 0`, animate to target via `useEffect`
-- [ ] Add `fadeSlideIn` entrance animation on "See the Answer" button
-- [ ] Scroll input into view after each guess on mobile
-- [ ] Add `navigator.clipboard` error handling with try/catch
-
-**Accessibility:**
-- [ ] `aria-live="polite"` + `role="log"` on guess history container
-- [ ] `aria-label="Enter your guess"` on input field
-- [ ] `role="img"` + `aria-label` on all emoji spans (feedback + trail)
-- [ ] Focus management: move focus to heading on play → reveal transition
-- [ ] Change `Header.tsx` wrapper from `<div>` to `<header>`
-- [ ] Add `type="button"` to all non-form buttons
-- [ ] Add `role="progressbar"` + `aria-valuenow` to ProgressBar
-
-**Mobile polish:**
-- [ ] Safe-area inset padding for iPhone home indicator (`env(safe-area-inset-bottom)`)
-- [ ] Test `inputMode="decimal"` vs `"text"` — numeric keypad vs shorthand access tradeoff
-- [ ] Viewport `user-scalable=no` to prevent accidental zoom
-- [ ] Extract repeated gradient `background` styles to Tailwind utilities
-
-**Done when:** Game feels native-app smooth on iOS Safari and Chrome Android. Screen reader can play the full game.
 
 ---
 
@@ -266,8 +345,9 @@ next.config.js, .eslintrc.json, package.json, CLAUDE.md
 
 ### To Be Created
 ```
-Phase 3:  lib/db.ts, lib/models/Question.ts, scripts/seed-questions.ts
-Phase 4:  (modifications to existing files)
+Phase 3A: (no new files — deploy existing build)
+Phase 4:  (modifications to existing files only)
+Phase 3B: lib/db.ts, lib/models/Question.ts, scripts/seed-questions.ts, .env.example
 Phase 5:  components/StatsModal.tsx, hooks/useStreak.ts, public/og-image.png,
           public/favicon.ico, public/manifest.json
 Phase 6:  scripts/generate-questions.ts, app/archive/page.tsx, app/about/page.tsx,

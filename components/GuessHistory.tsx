@@ -47,7 +47,7 @@ export default function GuessHistory({ guesses, gameOver }: GuessHistoryProps) {
   if (guesses.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-2.5 mb-6">
+    <div className="flex flex-col gap-2.5 mb-6" role="log" aria-live="polite" aria-label="Guess history">
       {guesses.map((g, i) => (
         <GuessRow key={i} guess={g} />
       ))}

@@ -164,7 +164,7 @@ Add to `"scripts"`:
 
 ```
 # MongoDB Atlas connection string
-MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/guesstimate?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/whoa?retryWrites=true&w=majority
 
 # Public site URL (used for share links)
 NEXT_PUBLIC_SITE_URL=http://localhost:3000

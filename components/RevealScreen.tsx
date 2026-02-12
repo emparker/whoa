@@ -1,8 +1,39 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import { Guess, Question } from "@/types";
 import { formatNum, MAX_GUESSES } from "@/lib/game-logic";
 import ShareButton from "./ShareButton";
+
+function Countdown() {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setUTCHours(24, 0, 0, 0);
+      const diff = midnight.getTime() - now.getTime();
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setTimeLeft(
+        `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+      );
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  if (!timeLeft) return null;
+
+  return (
+    <div className="text-center text-sm text-text-muted mt-2 animate-fadeIn">
+      Next question in <span className="font-mono text-text-secondary">{timeLeft}</span>
+    </div>
+  );
+}
 
 interface RevealScreenProps {
   question: Question;
@@ -15,6 +46,12 @@ export default function RevealScreen({
   guesses,
   solved,
 }: RevealScreenProps) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
   return (
     <div className="pt-8 animate-fadeIn text-center">
       {/* Result Badge */}
@@ -32,7 +69,11 @@ export default function RevealScreen({
       </div>
 
       {/* Question */}
-      <h2 className="text-lg font-medium text-[#94A3B8] mb-4 leading-[1.4]">
+      <h2
+        ref={headingRef}
+        tabIndex={-1}
+        className="text-lg font-medium text-[#94A3B8] mb-4 leading-[1.4] outline-none"
+      >
         {question.question}
       </h2>
 
@@ -47,7 +88,7 @@ export default function RevealScreen({
       {/* Explanation Card */}
       <div className="bg-bg-secondary rounded-[14px] p-5 text-left mb-6 border border-border animate-fadeSlideIn [animation-delay:0.2s] [animation-fill-mode:both]">
         <div className="text-xs text-accent font-semibold mb-2 uppercase tracking-wider">
-          💡 Did you know?
+          <span role="img" aria-hidden="true">💡</span> Did you know?
         </div>
         <p className="text-[15px] leading-[1.6] text-text-secondary m-0">
           {question.explanation}
@@ -55,12 +96,14 @@ export default function RevealScreen({
       </div>
 
       {/* Emoji Trail */}
-      <div className="flex justify-center gap-2 mb-6 text-[28px]">
+      <div className="flex justify-center gap-2 mb-6 text-[28px]" aria-label="Your guesses">
         {guesses.map((g, i) => (
           <span
             key={i}
             className="animate-popIn [animation-fill-mode:both]"
             style={{ animationDelay: `${i * 0.1}s` }}
+            role="img"
+            aria-label={g.timedOut ? "Timed out" : g.feedback.label}
           >
             {g.timedOut ? "⏰" : g.feedback.emoji}
           </span>
@@ -69,6 +112,8 @@ export default function RevealScreen({
           <span
             className="animate-popIn [animation-fill-mode:both]"
             style={{ animationDelay: `${guesses.length * 0.1}s` }}
+            role="img"
+            aria-label="Not solved"
           >
             ❌
           </span>
@@ -83,6 +128,9 @@ export default function RevealScreen({
         answer={question.answer}
         unit={question.unit}
       />
+
+      {/* Come back tomorrow */}
+      <Countdown />
     </div>
   );
 }

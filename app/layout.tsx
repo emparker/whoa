@@ -5,11 +5,11 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Guesstimate — Your Brain vs. Reality",
+  title: "Whoa! — Your Brain vs. Reality",
   description:
     "A daily estimation game. Guess real-world numbers with hot/cold feedback. One question per day, five guesses, spoiler-free sharing.",
   openGraph: {
-    title: "Guesstimate — Your Brain vs. Reality",
+    title: "Whoa! — Your Brain vs. Reality",
     description: "How close is your instinct? Daily number guessing game.",
     type: "website",
   },

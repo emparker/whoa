@@ -9,7 +9,7 @@ export interface CookieGameState {
   ld: string;          // last date completed (streak continuity check)
 }
 
-const COOKIE_NAME = "guesstimate_state";
+const COOKIE_NAME = "whoa_state";
 const MAX_AGE = 400 * 24 * 60 * 60; // 400 days in seconds
 
 /**
@@ -40,7 +40,7 @@ export function setGameState(state: CookieGameState): void {
   if (typeof document === "undefined") return;
 
   const value = encodeURIComponent(JSON.stringify(state));
-  document.cookie = `${COOKIE_NAME}=${value}; path=/; max-age=${MAX_AGE}; SameSite=Lax`;
+  document.cookie = `${COOKIE_NAME}=${value}; path=/; max-age=${MAX_AGE}; SameSite=Lax; Secure`;
 }
 
 /**
@@ -49,7 +49,7 @@ export function setGameState(state: CookieGameState): void {
 export function clearGameState(): void {
   if (typeof document === "undefined") return;
 
-  document.cookie = `${COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`;
+  document.cookie = `${COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax; Secure`;
 }
 
 /**

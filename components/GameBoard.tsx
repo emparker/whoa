@@ -130,7 +130,7 @@ export default function GameBoard({ question }: GameBoardProps) {
         <button
           type="button"
           onClick={handleReveal}
-          className="w-full py-4 text-base font-semibold text-white rounded-xl mt-2 transition-transform active:scale-95"
+          className="w-full py-4 text-base font-semibold text-white rounded-xl mt-2 transition-transform active:scale-95 animate-fadeSlideIn [animation-delay:0.3s] [animation-fill-mode:both]"
           style={{
             background: solved
               ? "linear-gradient(135deg, #10B981, #059669)"

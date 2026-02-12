@@ -54,6 +54,7 @@ export default function GuessInput({
           ref={inputRef}
           type="text"
           inputMode="decimal"
+          aria-label="Enter your guess"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
