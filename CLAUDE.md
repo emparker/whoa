@@ -51,7 +51,9 @@ types/
 - Timeout burns a guess (shown as ⏰ in history and share text)
 - Feedback thresholds: ✅ Exact (≤2% off) · 🔥 Hot (≤5%) · 🌡️ Warm (≤20%) · ❄️ Cold (>20%)
 - Always show directional hint: ⬆️ Higher or ⬇️ Lower (except on exact)
-- Input supports shorthand: 5k=5000, 2m=2000000, 1.5b=1500000000
+- Mobile magnitude buttons: Thousand, Million, Billion, Trillion (tap-to-toggle, numeric keypad stays up)
+- Desktop shorthand still works: 5k=5000, 2m=2000000, 1.5b=1500000000
+- Answer range capped at trillions — no quintillion+ questions
 - Share output is spoiler-free emoji grid — this is the most important feature for virality
 
 ## Design System

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { parseInput } from "@/lib/game-logic";
 
-type Suffix = "k" | "m" | "b";
+type Suffix = "k" | "m" | "b" | "t";
 
 interface GuessInputProps {
   onGuess: (value: number) => void;
@@ -12,10 +12,11 @@ interface GuessInputProps {
   focusTrigger?: number;
 }
 
-const SUFFIXES: { key: Suffix; label: string; desc: string }[] = [
-  { key: "k", label: "K", desc: "thousand" },
-  { key: "m", label: "M", desc: "million" },
-  { key: "b", label: "B", desc: "billion" },
+const SUFFIXES: { key: Suffix; label: string }[] = [
+  { key: "k", label: "Thousand" },
+  { key: "m", label: "Million" },
+  { key: "b", label: "Billion" },
+  { key: "t", label: "Trillion" },
 ];
 
 export default function GuessInput({
@@ -110,7 +111,7 @@ export default function GuessInput({
             key={key}
             type="button"
             onClick={() => toggleSuffix(key)}
-            className={`px-5 py-2 min-h-[44px] min-w-[52px] text-sm font-semibold rounded-lg transition-all active:scale-95 ${
+            className={`px-4 py-2 min-h-[44px] text-sm font-semibold rounded-lg transition-all active:scale-95 ${
               suffix === key
                 ? "text-white shadow-md"
                 : "bg-bg-primary border border-border text-text-secondary hover:border-accent"
@@ -121,16 +122,10 @@ export default function GuessInput({
                 : undefined
             }
             aria-pressed={suffix === key}
-            aria-label={`${label} multiplier`}
           >
             {label}
           </button>
         ))}
-        {suffix && (
-          <span className="text-xs text-text-dim ml-0.5 animate-fadeIn">
-            {SUFFIXES.find((s) => s.key === suffix)?.desc}
-          </span>
-        )}
       </div>
 
       {/* Live preview of expanded value */}
@@ -143,7 +138,7 @@ export default function GuessInput({
       {/* First-guess hint */}
       {showHint && (
         <div className="text-center text-xs text-text-dim mt-2.5">
-          Tap K, M, or B to set magnitude — no need to type zeros
+          Use the buttons below to set magnitude — no need to type zeros
         </div>
       )}
     </div>

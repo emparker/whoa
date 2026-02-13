@@ -49,7 +49,7 @@ Tagline candidates:
 ├── components/
 │   ├── GameBoard.tsx           # Main game orchestrator
 │   ├── QuestionDisplay.tsx     # Question text + metadata
-│   ├── GuessInput.tsx          # Number input with shorthand parsing
+│   ├── GuessInput.tsx          # Number input with magnitude buttons + shorthand parsing
 │   ├── GuessHistory.tsx        # List of past guesses with feedback
 │   ├── GuessRow.tsx            # Single guess with emoji + progress bar
 │   ├── RevealScreen.tsx        # Answer reveal + explanation + share
@@ -289,17 +289,19 @@ Every question must NOT:
 - ❌ Have an answer that changes frequently (use stable facts)
 - ❌ Be googleable in under 5 seconds (some friction is good)
 
+### Answer range constraint
+All question answers must be expressible with the magnitude buttons: Thousand, Million, Billion, or Trillion. Answers above trillions (quadrillions, quintillions, etc.) are excluded — they're unintuitive and nearly impossible to input on mobile.
+
 ### Sample questions (for seeding):
 1. How long is 1 billion seconds? → 31.7 years
 2. How many times does your heart beat in a day? → ~100,000
 3. How many photos are taken worldwide every day? → ~1.4 billion
 4. How far away is the Moon in miles? → ~238,900
-5. How many grains of sand are on Earth? → ~7.5 quintillion (7.5e18)
-6. How many emails are sent worldwide every day? → ~333 billion
-7. How long would it take to walk to the Moon? → ~9 years
-8. How many cells are in the human body? → ~37.2 trillion
-9. How fast does a sneeze travel in mph? → ~100 mph
-10. How many trees are on Earth? → ~3 trillion
+5. How many emails are sent worldwide every day? → ~333 billion
+6. How long would it take to walk to the Moon? → ~9 years
+7. How many cells are in the human body? → ~37.2 trillion
+8. How fast does a sneeze travel in mph? → ~100 mph
+9. How many trees are on Earth? → ~3 trillion
 
 ---
 

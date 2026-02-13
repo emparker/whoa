@@ -360,20 +360,6 @@ const QUESTIONS: Omit<Question, "_id">[] = [
     category: "NATURE" as Category,
     difficulty: "hard" as Difficulty,
   },
-  {
-    date: "2026-03-10",
-    questionNumber: 30,
-    question: "How many grains of sand are on Earth?",
-    answer: 7.5e18,
-    unit: "grains",
-    explanation:
-      "Earth has roughly 7.5 quintillion (7.5 × 10\u00B9\u2078) grains of sand. That's more than the number of stars visible from Earth, but fewer than the estimated stars in the observable universe.",
-    source: "https://www.npr.org/sections/krulwich/2012/09/17/161096233/",
-    category: "WILD_CARD" as Category,
-    difficulty: "hard" as Difficulty,
-    hotRange: 0.1,
-    warmRange: 0.35,
-  },
 ];
 
 export function getTodayQuestion(dateOverride?: string): Question {

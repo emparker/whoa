@@ -23,7 +23,8 @@ Core game loop with cookie persistence, SSR, 10-second per-guess timer, ReadyScr
 - Server-side question rendering (`force-dynamic`)
 - Dev-mode `?date=` query param for testing any question
 - Feedback algorithm (exact/hot/warm/cold with directional hints)
-- Shorthand input parsing (5k, 2m, 1.5b)
+- Shorthand input parsing (5k, 2m, 1.5b) — desktop keyboard
+- Magnitude buttons (Thousand / Million / Billion / Trillion) — mobile-friendly, no keyboard switching
 - Spoiler-free emoji share text with avg response time
 - All animations (fadeIn, fadeSlideIn, popIn, shake)
 - "Come back tomorrow" countdown timer on reveal screen
@@ -67,7 +68,7 @@ The original Phase 3 was split: deployment (3A) was extracted and moved ahead of
 - **Public launch** = active promotion. Product Hunt, social posts, press. First impressions are final — the app must be polished, infrastructure must be solid, and link previews must be compelling.
 
 ### Content Runway
-30 hardcoded questions start burning on deploy day. MongoDB (Phase 3B) and the content pipeline (Phase 6) must be operational before day ~20 to ensure no gaps. Monitor this actively after soft launch.
+29 hardcoded questions (one quintillion-scale question removed — see Content Decisions below). MongoDB (Phase 3B) and the content pipeline (Phase 6) must be operational before day ~20 to ensure no gaps. Monitor this actively after soft launch.
 
 ### Detailed TODO Plans
 - [`docs/TODOs/phase-3a-deploy-to-vercel.md`](TODOs/phase-3a-deploy-to-vercel.md)
@@ -85,6 +86,9 @@ These decisions were evaluated by architecture, frontend, and backend specialist
 | Timezone | **UTC everywhere** | Simpler, Wordle precedent. Server already uses UTC. All question dates are UTC. A user in Hawaii at 10pm sees "tomorrow's" question — this is acceptable and matches Wordle behavior. |
 | Cookie vs localStorage | **Cookies only** | Per CLAUDE.md. Single JSON cookie (`whoa_state`), ~200 bytes. Store raw guess values, recompute feedback on hydration. |
 | Answer delivery | **Send answer with question** | MVP tradeoff. Client-side only. Determined cheaters will always find it. No prizes or leaderboard to protect. Harden in a later phase if needed. |
+| Mobile number input | **Magnitude buttons + decimal keypad** | `inputMode="decimal"` keeps the numeric keypad up on mobile. Tap-to-toggle Thousand/Million/Billion/Trillion buttons let players express big numbers without typing zeros or switching keyboards. Full words (not K/M/B) — user testing showed single letters were confused with units (kilometers, miles). Desktop shorthand (5k, 2m) still works via `parseInput`. |
+| Answer range | **Cap at trillions** | Questions with answers above trillions (e.g. quintillions) are excluded — they're nearly impossible to input on mobile even with magnitude buttons, and the numbers lose intuitive meaning. The Trillion button is the ceiling. |
+| Content strategy | **Append-only, quarterly batches** | Never re-seed or mutate existing questions. Add new questions with future dates. Target 365 questions for Year 1, then quarterly batch authoring (90 questions/quarter) with AI-assisted generation and manual curation. |
 | Server vs client rendering | **Server Component for page, client for GameBoard** | Question data is the same for all users per day — perfect SSR candidate. Eliminates loading spinner, improves LCP, reduces client JS. |
 | Session model | **Skip for MVP** | All state in cookies. Server-side sessions add write overhead with no benefit until aggregate analytics ("closer than 84% of players") in Phase 6. |
 | MongoDB pool size | **maxPoolSize: 5** | Low pool for Vercel serverless. Cached connection singleton on `global` survives across invocations in the same container. |
@@ -271,18 +275,31 @@ Use `findOneAndUpdate({ date: q.date }, { $set: q }, { upsert: true })` — not 
 ---
 
 ### Phase 6: Content Pipeline & Growth
-> Goal: Sustainable content and organic growth.
+> Goal: 365-day question bank for Year 1, then sustainable content for the long term.
 
-- [ ] AI question generation script (`scripts/generate-questions.ts`) using Claude API
+**Year 1 target: 365 questions.** Currently at 29. Priority is reaching 365 before the runway runs out.
+
+**Immediate (before day ~20):**
+- [ ] AI-assisted question generation using Claude API — bulk-generate candidates, manually curate/edit/approve
 - [ ] Question review workflow (JSON file reviewed in PR before seeding)
+- [ ] Seed database to 365 questions (full year of daily content)
 - [ ] 30-day content buffer monitoring (alert when runway drops below 30)
+
+**After Year 1 bank is seeded:**
 - [ ] Themed day categories (Time Tuesday, Space Sunday, etc.)
 - [ ] Archive page (`app/archive/page.tsx`) — past questions, locked until played
 - [ ] SEO blog pages for viral questions (`app/q/[id]/page.tsx`)
 - [ ] Social proof on reveal ("You're closer than 84% of players") — requires Session model
 - [ ] PWA offline support + add-to-homescreen
 
-**Done when:** Content pipeline runs autonomously. Archive and SEO pages drive organic traffic.
+**Long-term content strategy (Year 2+):**
+- **Append, never re-seed.** New questions are added to the database with future dates. Existing questions and their dates are immutable once seeded — players may reference past games.
+- **Quarterly batch authoring.** Every ~3 months, generate and curate 90 new questions to cover the next quarter. Aim to always have a 90-day buffer ahead of the current date.
+- **AI-assisted pipeline.** Use an LLM to generate 500+ candidate questions per session. Manually curate for the "wait, WHAT?" test, verify sources, and approve. Realistically produces 90 vetted questions per weekend session.
+- **Community submissions (when traction warrants).** Let users submit question ideas. Moderate and quality-gate before seeding. This is how trivia games scale indefinitely.
+- **Content is infinite.** The universe of numeric facts spans human body, space, money/economics, nature, history, food, technology, geography, and more. 1,000+ unique high-quality questions is achievable without stretching. Content quantity is not a risk; content quality is the bottleneck to protect.
+
+**Done when:** 365 questions are seeded. Content pipeline can produce a quarter's worth of questions in a single session.
 
 ---
 
@@ -316,7 +333,7 @@ Every question must pass the "wait, WHAT?" test. A single boring question breaks
 |------|----------|------------|--------|
 | Cookie persistence done wrong forces GameBoard rewrite | **High** | Define cookie schema + hydration flow before coding. Handle all 5 states. | Schema designed above |
 | Timezone mismatch between server and client | **High** | UTC everywhere. Server date in API response is canonical. | Decision locked |
-| 30-question runway runs out (~1 month) | **Medium** | Start Phase 6 content pipeline before day 20. Monitor buffer. | 30 questions ready |
+| 29-question runway runs out (~1 month) | **Medium** | Start Phase 6 content pipeline before day 20. Monitor buffer. | 29 questions ready |
 | Progress bar / border bugs erode perceived quality | **Low** | Fix in Phase 2A before any user testing. | Fixed in Phase 2 |
 | `navigator.clipboard` fails in in-app browsers (Instagram, Twitter) | **Medium** | Web Share API fallback on mobile in Phase 4. | Not yet implemented |
 | MongoDB cold starts on Vercel (500-1500ms first request) | **Low** | Connection singleton caches across invocations. Cron ping if needed. | Architecture designed |
