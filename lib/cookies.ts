@@ -9,7 +9,7 @@ export interface CookieGameState {
   ld: string;          // last date completed (streak continuity check)
 }
 
-const COOKIE_NAME = "whoa_state";
+const COOKIE_NAME = "way-off_state";
 const MAX_AGE = 400 * 24 * 60 * 60; // 400 days in seconds
 
 /**

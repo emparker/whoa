@@ -1,4 +1,4 @@
-# Whoa! — Development Roadmap & Status Tracker
+# Way Off — Development Roadmap & Status Tracker
 
 > Living document. Update checkboxes and status as work progresses.
 
@@ -84,7 +84,7 @@ These decisions were evaluated by architecture, frontend, and backend specialist
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Timezone | **UTC everywhere** | Simpler, Wordle precedent. Server already uses UTC. All question dates are UTC. A user in Hawaii at 10pm sees "tomorrow's" question — this is acceptable and matches Wordle behavior. |
-| Cookie vs localStorage | **Cookies only** | Per CLAUDE.md. Single JSON cookie (`whoa_state`), ~200 bytes. Store raw guess values, recompute feedback on hydration. |
+| Cookie vs localStorage | **Cookies only** | Per CLAUDE.md. Single JSON cookie (`way-off_state`), ~200 bytes. Store raw guess values, recompute feedback on hydration. |
 | Answer delivery | **Send answer with question** | MVP tradeoff. Client-side only. Determined cheaters will always find it. No prizes or leaderboard to protect. Harden in a later phase if needed. |
 | Mobile number input | **Magnitude buttons + decimal keypad** | `inputMode="decimal"` keeps the numeric keypad up on mobile. Tap-to-toggle Thousand/Million/Billion/Trillion buttons let players express big numbers without typing zeros or switching keyboards. Full words (not K/M/B) — user testing showed single letters were confused with units (kilometers, miles). Desktop shorthand (5k, 2m) still works via `parseInput`. |
 | Answer range | **Cap at trillions** | Questions with answers above trillions (e.g. quintillions) are excluded — they're nearly impossible to input on mobile even with magnitude buttons, and the numbers lose intuitive meaning. The Trillion button is the ceiling. |
@@ -99,7 +99,7 @@ These decisions were evaluated by architecture, frontend, and backend specialist
 
 ## Cookie Schema
 
-Compact JSON stored in a single `whoa_state` cookie:
+Compact JSON stored in a single `way-off_state` cookie:
 
 ```typescript
 interface CookieGameState {
@@ -152,7 +152,7 @@ Extracted from the original Phase 3. Deployment was decoupled from MongoDB becau
 
 - [x] **Verify production build locally** — `npm run build && npm run start`
 - [x] **Create Vercel project** — connected GitHub repo, Hobby plan, no env vars
-- [x] **Deploy to Vercel** — live at whoa-gold.vercel.app
+- [x] **Deploy to Vercel** — live URL (rename in progress)
 - [x] **Production smoke test** — page loads, API returns valid JSON, no errors
 - [ ] **Test on real mobile devices** — iOS Safari, Chrome Android
 

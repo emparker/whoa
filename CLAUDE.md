@@ -3,7 +3,7 @@
 ## Project
 Daily estimation game — a Wordle-style viral web game where players guess real-world numeric values with hot/cold feedback. One question per day, five guesses, spoiler-free emoji sharing.
 
-Name: **Whoa!** (technical identifier: `whoa`)
+Name: **Way Off** (technical identifier: `way-off`)
 
 ## Tech Stack
 - Next.js 14 (App Router) with TypeScript

@@ -94,7 +94,7 @@ interface Question {
   question: string;           // "How long is 1 billion seconds?"
   answer: number;             // 31.7
   unit: string;               // "years"
-  explanation: string;        // The "whoa" moment, 1-2 sentences
+  explanation: string;        // The "way off" moment, 1-2 sentences
   source: string;             // URL or citation for credibility
   category: Category;         // "TIME" | "SCALE" | "HUMAN_BODY" | "SPACE" | "POP_CULTURE" | "HISTORY" | "WILD_CARD"
   difficulty: Difficulty;     // "easy" | "medium" | "hard"

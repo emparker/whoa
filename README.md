@@ -1,4 +1,4 @@
-# Whoa! — Your Brain vs. Reality
+# Way Off — Your Brain vs. Reality
 
 A daily estimation game where players guess real-world numbers with hot/cold feedback. One question per day, five guesses, spoiler-free emoji sharing.
 
