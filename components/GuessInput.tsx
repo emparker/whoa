@@ -31,7 +31,10 @@ export default function GuessInput({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!disabled && inputRef.current) inputRef.current.focus();
+    if (!disabled) {
+      setSuffix(null);
+      inputRef.current?.focus();
+    }
   }, [disabled, focusTrigger]);
 
   // Combine typed input with selected suffix for parsing
@@ -58,6 +61,7 @@ export default function GuessInput({
     }
     onGuess(num);
     setInput("");
+    setSuffix(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

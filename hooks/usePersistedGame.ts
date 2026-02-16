@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Question, Guess, ActiveGuess, TimedOutGuess, GameResult } from "@/types";
-import { getFeedback, getPctOff, MAX_GUESSES, GUESS_TIMER_MS } from "@/lib/game-logic";
+import { getFeedback, getLogDistance, MAX_GUESSES, GUESS_TIMER_MS } from "@/lib/game-logic";
 import {
   CookieGameState,
   getGameState,
@@ -17,19 +17,14 @@ function wasYesterday(dateStr: string): boolean {
   return d.toISOString().split("T")[0] === yesterday.toISOString().split("T")[0];
 }
 
-function rehydrateGuesses(
-  rawValues: number[],
-  answer: number,
-  hotRange?: number,
-  warmRange?: number
-): Guess[] {
+function rehydrateGuesses(rawValues: number[], answer: number): Guess[] {
   return rawValues.map((value) => {
     if (value === -1) {
       return {
         timedOut: true,
         value: null,
         feedback: null,
-        pctOff: null,
+        logDistance: null,
         responseTime: GUESS_TIMER_MS,
         timestamp: 0,
       } as TimedOutGuess;
@@ -37,8 +32,8 @@ function rehydrateGuesses(
     return {
       timedOut: false,
       value,
-      feedback: getFeedback(value, answer, hotRange, warmRange),
-      pctOff: getPctOff(value, answer),
+      feedback: getFeedback(value, answer),
+      logDistance: getLogDistance(value, answer),
       responseTime: 0,
       timestamp: 0,
     } as ActiveGuess;
@@ -78,7 +73,7 @@ export function usePersistedGame(question: Question) {
     // Handle the 5 hydration states
     if (saved && saved.d === questionDate) {
       // Same day — restore state
-      const guesses = rehydrateGuesses(saved.g, question.answer, question.hotRange, question.warmRange);
+      const guesses = rehydrateGuesses(saved.g, question.answer);
       const result: GameResult =
         saved.r === "w" ? "win" : saved.r === "l" ? "loss" : "playing";
       const screen = result !== "playing" ? "reveal" : guesses.length > 0 ? "play" : "ready";
@@ -116,7 +111,7 @@ export function usePersistedGame(question: Question) {
       longestStreak,
       gamesPlayed,
     });
-  }, [question.date, question.answer, question.hotRange, question.warmRange]);
+  }, [question.date, question.answer]);
 
   const writeCookie = useCallback(
     (newGuesses: Guess[], newResult: GameResult, sk: number, sl: number, gp: number) => {
@@ -138,13 +133,13 @@ export function usePersistedGame(question: Question) {
 
   const handleGuess = useCallback(
     (value: number, responseTime: number) => {
-      const feedback = getFeedback(value, question.answer, question.hotRange, question.warmRange);
-      const pctOff = getPctOff(value, question.answer);
+      const feedback = getFeedback(value, question.answer);
+      const logDist = getLogDistance(value, question.answer);
       const guess: ActiveGuess = {
         timedOut: false,
         value,
         feedback,
-        pctOff,
+        logDistance: logDist,
         responseTime,
         timestamp: Date.now(),
       };
@@ -186,7 +181,7 @@ export function usePersistedGame(question: Question) {
         };
       });
     },
-    [question.answer, question.hotRange, question.warmRange, writeCookie]
+    [question.answer, writeCookie]
   );
 
   const handleTimeout = useCallback(() => {
@@ -194,7 +189,7 @@ export function usePersistedGame(question: Question) {
       timedOut: true,
       value: null,
       feedback: null,
-      pctOff: null,
+      logDistance: null,
       responseTime: GUESS_TIMER_MS,
       timestamp: Date.now(),
     };

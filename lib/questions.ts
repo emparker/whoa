@@ -159,8 +159,6 @@ const QUESTIONS: Omit<Question, "_id">[] = [
     source: "https://www.usga.org/",
     category: "WILD_CARD" as Category,
     difficulty: "easy" as Difficulty,
-    hotRange: 0.08,
-    warmRange: 0.25,
   },
   {
     date: "2026-02-22",
@@ -222,8 +220,6 @@ const QUESTIONS: Omit<Question, "_id">[] = [
     source: "https://solarsystem.nasa.gov/solar-system/sun/overview/",
     category: "SPACE" as Category,
     difficulty: "easy" as Difficulty,
-    hotRange: 0.1,
-    warmRange: 0.3,
   },
   {
     date: "2026-02-27",
@@ -236,8 +232,6 @@ const QUESTIONS: Omit<Question, "_id">[] = [
     source: "https://tootsie.com/howmanylick-experiments",
     category: "WILD_CARD" as Category,
     difficulty: "easy" as Difficulty,
-    hotRange: 0.1,
-    warmRange: 0.3,
   },
   {
     date: "2026-02-28",

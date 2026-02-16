@@ -25,8 +25,6 @@ export interface Question {
   category: Category;
   difficulty: Difficulty;
   questionNumber: number;
-  hotRange?: number;
-  warmRange?: number;
 }
 
 export interface Feedback {
@@ -46,14 +44,14 @@ export interface ActiveGuess extends GuessBase {
   timedOut: false;
   value: number;
   feedback: Feedback;
-  pctOff: number;
+  logDistance: number;
 }
 
 export interface TimedOutGuess extends GuessBase {
   timedOut: true;
   value: null;
   feedback: null;
-  pctOff: null;
+  logDistance: null;
 }
 
 export type Guess = ActiveGuess | TimedOutGuess;

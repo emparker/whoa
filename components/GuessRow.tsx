@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { Guess } from "@/types";
 import { formatNum } from "@/lib/game-logic";
 
-function ProgressBar({ pctOff, color }: { pctOff: number; color: string }) {
+function ProgressBar({ logDistance, color }: { logDistance: number; color: string }) {
   const [mounted, setMounted] = useState(false);
-  const clampPct = Math.min(pctOff * 100, 100);
+  // Map log distance to 0-100: 0 = perfect, 2.0+ = empty bar
+  const clampPct = Math.min((logDistance / 2.0) * 100, 100);
   const fillPct = 100 - clampPct;
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function GuessRow({ guess }: GuessRowProps) {
     );
   }
 
-  const { value, feedback, pctOff } = guess;
+  const { value, feedback, logDistance } = guess;
 
   return (
     <div
@@ -72,11 +73,11 @@ export default function GuessRow({ guess }: GuessRowProps) {
             {feedback.label}
             {feedback.direction && (
               <span className="text-2xl animate-slamIn inline-block" role="img" aria-label={`Go ${feedback.direction}`}>
-                {pctOff > 1.0
+                {logDistance > 1.0
                   ? feedback.direction === "higher"
                     ? "⬆️⬆️⬆️"
                     : "⬇️⬇️⬇️"
-                  : pctOff > 0.5
+                  : logDistance > 0.35
                     ? feedback.direction === "higher"
                       ? "⬆️⬆️"
                       : "⬇️⬇️"
@@ -87,7 +88,7 @@ export default function GuessRow({ guess }: GuessRowProps) {
             )}
           </span>
         </div>
-        <ProgressBar pctOff={pctOff} color={feedback.color} />
+        <ProgressBar logDistance={logDistance} color={feedback.color} />
       </div>
     </div>
   );

@@ -8,56 +8,20 @@ export function getTimerMs(guessIndex: number): number {
   return guessIndex === 0 ? 20000 : 10000;
 }
 
-export function getFeedback(
-  guess: number,
-  answer: number,
-  hotRange = 0.05,
-  warmRange = 0.2
-): Feedback {
-  const pctOff = Math.abs(guess - answer) / answer;
+export function getFeedback(guess: number, answer: number): Feedback {
+  const logDist = getLogDistance(guess, answer);
   const direction = guess < answer ? "higher" : ("lower" as const);
-
   const dirWord = direction === "higher" ? "higher" : "lower";
 
-  if (pctOff <= 0.02)
-    return {
-      level: "exact",
-      emoji: "✅",
-      color: "#10B981",
-      label: "Nailed it!",
-      direction: null,
-    };
-  if (pctOff <= hotRange)
-    return {
-      level: "hot",
-      emoji: "🔥",
-      color: "#EF4444",
-      label: "Almost!",
-      direction,
-    };
-  if (pctOff <= warmRange)
-    return {
-      level: "warm",
-      emoji: "🌡️",
-      color: "#F59E0B",
-      label: `A bit ${dirWord}`,
-      direction,
-    };
-  if (pctOff <= 0.5)
-    return {
-      level: "cold",
-      emoji: "❄️",
-      color: "#3B82F6",
-      label: dirWord.charAt(0).toUpperCase() + dirWord.slice(1),
-      direction,
-    };
-  return {
-    level: "cold",
-    emoji: "❄️",
-    color: "#3B82F6",
-    label: `Way ${dirWord}`,
-    direction,
-  };
+  if (logDist <= 0.01)
+    return { level: "exact", emoji: "✅", color: "#10B981", label: "Nailed it!", direction: null };
+  if (logDist <= 0.08)
+    return { level: "hot", emoji: "🔥", color: "#EF4444", label: "Almost!", direction };
+  if (logDist <= 0.35)
+    return { level: "warm", emoji: "🌡️", color: "#F59E0B", label: `A bit ${dirWord}`, direction };
+  if (logDist <= 1.0)
+    return { level: "cold", emoji: "❄️", color: "#3B82F6", label: dirWord.charAt(0).toUpperCase() + dirWord.slice(1), direction };
+  return { level: "cold", emoji: "❄️", color: "#3B82F6", label: `Way ${dirWord}`, direction };
 }
 
 export function parseInput(val: string): number | null {
@@ -89,6 +53,8 @@ export function formatNum(n: number): string {
   return n.toLocaleString(undefined, { maximumFractionDigits: 1 });
 }
 
-export function getPctOff(guess: number, answer: number): number {
-  return Math.abs(guess - answer) / answer;
+/** Log-scale distance: |log10(guess / answer)|. 1.0 = one order of magnitude off. */
+export function getLogDistance(guess: number, answer: number): number {
+  if (guess <= 0 || answer <= 0) return Infinity;
+  return Math.abs(Math.log10(guess / answer));
 }
