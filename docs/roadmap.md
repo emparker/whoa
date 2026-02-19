@@ -43,7 +43,6 @@ Core game loop with cookie persistence, SSR, 10-second per-guess timer, ReadyScr
 ### What's Broken or Missing
 - **Answer exposed in API response** — acceptable for MVP, documented tradeoff
 - **Gradient utilities not extracted** — low priority, deferred
-- **GuessTimer `onTimeout` callback in useEffect deps** — can theoretically reset timer mid-countdown if parent re-renders with new callback reference. Low probability but should be refactored to use a ref pattern.
 
 ---
 

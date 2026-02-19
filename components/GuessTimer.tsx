@@ -20,6 +20,8 @@ export default function GuessTimer({
   const [barColor, setBarColor] = useState(COLOR_START);
   const [animating, setAnimating] = useState(false);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const onTimeoutRef = useRef(onTimeout);
+  useEffect(() => { onTimeoutRef.current = onTimeout; }, [onTimeout]);
 
   useEffect(() => {
     // Clear all timers
@@ -58,10 +60,10 @@ export default function GuessTimer({
     }
 
     // Timeout callback
-    timeoutsRef.current.push(setTimeout(onTimeout, durationMs));
+    timeoutsRef.current.push(setTimeout(() => onTimeoutRef.current(), durationMs));
 
     return clearTimers;
-  }, [running, durationMs, onTimeout]);
+  }, [running, durationMs]);
 
   return (
     <div
