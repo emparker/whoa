@@ -24,7 +24,7 @@ function Countdown() {
     const tick = () => {
       const now = new Date();
       const midnight = new Date(now);
-      midnight.setUTCHours(24, 0, 0, 0);
+      midnight.setHours(24, 0, 0, 0);
       const diff = midnight.getTime() - now.getTime();
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
@@ -65,9 +65,10 @@ export default function RevealScreen({
     [question.questionNumber]
   );
 
-  // Determine if the winning guess was dead-on exact
+  // Determine win tiers: exact (dead-on) vs close-enough
   const lastGuess = guesses[guesses.length - 1];
   const isExactWin = solved && !lastGuess?.timedOut && lastGuess?.feedback?.level === "exact";
+  const isCloseWin = solved && !lastGuess?.timedOut && lastGuess?.feedback?.level === "close";
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -75,7 +76,7 @@ export default function RevealScreen({
 
   return (
     <div className="pt-8 animate-fadeIn text-center">
-      {isExactWin && <Confetti />}
+      {(isExactWin || isCloseWin) && <Confetti />}
 
       {/* Result Badge */}
       <div

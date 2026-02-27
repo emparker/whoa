@@ -1,5 +1,4 @@
-import Header from "@/components/Header";
-import GameBoard from "@/components/GameBoard";
+import GameContainer from "@/components/GameContainer";
 import { getTodayQuestion } from "@/lib/questions";
 
 interface HomeProps {
@@ -16,13 +15,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
   return (
     <main className="min-h-screen flex flex-col items-center">
-      <Header
-        questionNumber={question.questionNumber}
-        category={question.category}
-      />
-      <div className="w-full max-w-game px-5">
-        <GameBoard question={question} />
-      </div>
+      <GameContainer serverQuestion={question} />
     </main>
   );
 }

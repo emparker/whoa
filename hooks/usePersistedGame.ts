@@ -9,13 +9,7 @@ import {
   setGameState,
   genVisitorId,
 } from "@/lib/cookies";
-
-function wasYesterday(dateStr: string): boolean {
-  const d = new Date(dateStr + "T00:00:00Z");
-  const yesterday = new Date();
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-  return d.toISOString().split("T")[0] === yesterday.toISOString().split("T")[0];
-}
+import { wasYesterdayLocal } from "@/lib/date";
 
 function rehydrateGuesses(rawValues: number[], answer: number): Guess[] {
   return rawValues.map((value) => {
@@ -85,7 +79,7 @@ export function usePersistedGame(question: Question) {
 
     // Different day or no cookie — check streak continuity
     if (saved && saved.ld) {
-      if (!wasYesterday(saved.ld)) {
+      if (!wasYesterdayLocal(saved.ld)) {
         streak = 0;
       }
     }
