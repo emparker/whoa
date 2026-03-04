@@ -16,10 +16,12 @@ How close is your instinct? Find out daily.
 
 | Emoji | Level | Accuracy |
 |-------|-------|----------|
-| ✅ | Exact | Within 2% |
+| ✅ | Exact | Within 1% |
+| 🎯 | Close | Within 3% |
 | 🔥 | Hot | Within 5% |
-| 🌡️ | Warm | Within 20% |
-| ❄️ | Cold | Over 20% off |
+| 🌡️ | Warm | Within 15% |
+| ❄️ | Cool | Within 50% |
+| 🧊 | Cold | Over 50% off |
 
 ## Tech Stack
 

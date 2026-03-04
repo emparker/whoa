@@ -117,15 +117,29 @@ interface GameState {
   gamesPlayed: number;
 }
 
-interface Guess {
-  value: number;
-  feedback: Feedback;
-  pctOff: number;
+interface GuessBase {
+  responseTime: number;
   timestamp: number;
 }
 
+interface ActiveGuess extends GuessBase {
+  timedOut: false;
+  value: number;
+  feedback: Feedback;
+  logDistance: number;
+}
+
+interface TimedOutGuess extends GuessBase {
+  timedOut: true;
+  value: null;
+  feedback: null;
+  logDistance: null;
+}
+
+type Guess = ActiveGuess | TimedOutGuess;
+
 interface Feedback {
-  level: "exact" | "hot" | "warm" | "cold";
+  level: "exact" | "close" | "hot" | "warm" | "cool" | "cold";
   emoji: string;
   color: string;
   label: string;
@@ -137,16 +151,20 @@ interface Feedback {
 
 ## 5. CORE GAME LOGIC
 
-### Feedback Algorithm
+### Feedback Algorithm (log-scale distance)
 ```typescript
 export function getFeedback(guess: number, answer: number): Feedback {
-  const pctOff = Math.abs(guess - answer) / answer;
+  const logDist = getLogDistance(guess, answer); // |log10(guess / answer)|
   const direction = guess < answer ? "higher" : "lower";
+  const dirWord = direction === "higher" ? "higher" : "lower";
 
-  if (pctOff <= 0.02) return { level: "exact", emoji: "✅", color: "#10B981", label: "Nailed it!", direction: null };
-  if (pctOff <= 0.05) return { level: "hot", emoji: "🔥", color: "#EF4444", label: "Very hot!", direction };
-  if (pctOff <= 0.20) return { level: "warm", emoji: "🌡️", color: "#F59E0B", label: "Warm", direction };
-  return { level: "cold", emoji: "❄️", color: "#3B82F6", label: "Cold", direction };
+  if (logDist <= 0.01) return { level: "exact", emoji: "✅", color: "#10B981", label: "Nailed it!", direction: null };
+  if (logDist <= 0.03) return { level: "close", emoji: "🎯", color: "#10B981", label: "Close enough!", direction: null };
+  if (logDist <= 0.05) return { level: "hot", emoji: "🔥", color: "#EF4444", label: "So close!", direction };
+  if (logDist <= 0.15) return { level: "warm", emoji: "🌡️", color: "#F59E0B", label: `Guess a bit ${dirWord}`, direction };
+  if (logDist <= 0.5)  return { level: "cool", emoji: "❄️", color: "#38BDF8", label: `Guess ${dirWord}`, direction };
+  if (logDist <= 1.0)  return { level: "cold", emoji: "🧊", color: "#3B82F6", label: `Guess ${dirWord}`, direction };
+  return { level: "cold", emoji: "🧊", color: "#3B82F6", label: `Guess WAY ${dirWord}!`, direction };
 }
 ```
 

@@ -43,19 +43,27 @@ export default function ReadyScreen({
         <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 text-xs text-text-secondary">
           <span className="flex items-center gap-1.5">
             <span className="text-base">✅</span>
-            <span>Within 2%</span>
+            <span>Nailed it!</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="text-base">🎯</span>
+            <span>Close enough!</span>
           </span>
           <span className="flex items-center gap-1.5">
             <span className="text-base">🔥</span>
-            <span>Within 5%</span>
+            <span>So close!</span>
           </span>
           <span className="flex items-center gap-1.5">
             <span className="text-base">🌡️</span>
-            <span>Within 20%</span>
+            <span>Warm</span>
           </span>
           <span className="flex items-center gap-1.5">
             <span className="text-base">❄️</span>
-            <span>Beyond 20%</span>
+            <span>Cool</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="text-base">🧊</span>
+            <span>Cold</span>
           </span>
         </div>
         <div className="text-xs text-text-secondary">

@@ -22,10 +22,10 @@ export function getFeedback(guess: number, answer: number): Feedback {
   if (logDist <= 0.15)
     return { level: "warm", emoji: "🌡️", color: "#F59E0B", label: `Guess a bit ${dirWord}`, direction };
   if (logDist <= 0.5)
-    return { level: "cool", emoji: "🧊", color: "#38BDF8", label: `Guess ${dirWord}`, direction };
+    return { level: "cool", emoji: "❄️", color: "#38BDF8", label: `Guess ${dirWord}`, direction };
   if (logDist <= 1.0)
-    return { level: "cold", emoji: "❄️", color: "#3B82F6", label: `Guess ${dirWord}`, direction };
-  return { level: "cold", emoji: "❄️", color: "#3B82F6", label: `Guess WAY ${dirWord}!`, direction };
+    return { level: "cold", emoji: "🧊", color: "#3B82F6", label: `Guess ${dirWord}`, direction };
+  return { level: "cold", emoji: "🧊", color: "#3B82F6", label: `Guess WAY ${dirWord}!`, direction };
 }
 
 /** Whether a feedback level counts as a win. */
