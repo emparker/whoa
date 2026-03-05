@@ -1,7 +1,7 @@
 # Phase 3: MongoDB & Real Content
 
 ## Context
-Phases 1-2 are complete — the core game loop works with 30 hardcoded questions in `lib/questions.ts`. Phase 3 migrates the data source to MongoDB Atlas via Mongoose, adds caching and rate limiting, and prepares for Vercel deployment. The hardcoded array is preserved as both seed data and a fallback when MongoDB is unreachable.
+Phases 1-2 are complete — the core game loop works with 182 hardcoded questions in `lib/questions.ts` (6 months of daily content, 2026-03-01 through 2026-08-29). Phase 3 migrates the data source to MongoDB Atlas via Mongoose, adds caching and rate limiting, and prepares for Vercel deployment. The hardcoded array is preserved as both seed data and a fallback when MongoDB is unreachable.
 
 ## Files Overview
 
@@ -80,7 +80,7 @@ Connection singleton that survives across Vercel serverless invocations by cachi
 - `unit`: String, required
 - `explanation`: String, required
 - `source`: String, required
-- `category`: String, required, enum: `["TIME", "SCALE", "HUMAN_BODY", "SPACE", "NATURE", "POP_CULTURE", "HISTORY", "WILD_CARD"]`
+- `category`: String, required, enum: `["TIME", "SCALE", "HUMAN_BODY", "SPACE", "NATURE", "HISTORY", "WILD_CARD"]`
 - `difficulty`: String, required, enum: `["easy", "medium", "hard"]`
 - `hotRange`: Number, optional
 - `warmRange`: Number, optional
@@ -182,10 +182,10 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 ### B. Seed Database
 - [ ] Set `MONGODB_URI` in `.env.local`
-- [ ] `npm run seed` — output: `Validation passed: 30 questions, dates 2026-02-09 to 2026-03-10`
-- [ ] Output: `Done: 30 created, 0 updated`
-- [ ] Run seed again — output: `Done: 0 created, 30 updated` (idempotent)
-- [ ] Verify in MongoDB Compass: 30 docs, unique indexes on `date` and `questionNumber`
+- [ ] `npm run seed` — output: `Validation passed: 182 questions, dates 2026-03-01 to 2026-08-29`
+- [ ] Output: `Done: 182 created, 0 updated`
+- [ ] Run seed again — output: `Done: 0 created, 182 updated` (idempotent)
+- [ ] Verify in MongoDB Compass: 182 docs, unique indexes on `date` and `questionNumber`
 
 ### C. Local with MongoDB
 - [ ] `npm run dev` with `MONGODB_URI` set — shows today's question from DB

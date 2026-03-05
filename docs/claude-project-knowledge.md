@@ -96,7 +96,7 @@ interface Question {
   unit: string;               // "years"
   explanation: string;        // The "way off" moment, 1-2 sentences
   source: string;             // URL or citation for credibility
-  category: Category;         // "TIME" | "SCALE" | "HUMAN_BODY" | "SPACE" | "POP_CULTURE" | "HISTORY" | "WILD_CARD"
+  category: Category;         // "TIME" | "SCALE" | "HUMAN_BODY" | "SPACE" | "NATURE" | "HISTORY" | "WILD_CARD"
   difficulty: Difficulty;     // "easy" | "medium" | "hard"
   hotRange: number;           // default 0.05 (±5%)
   warmRange: number;          // default 0.20 (±20%)
@@ -330,7 +330,7 @@ All question answers must be expressible with the magnitude buttons: Thousand, M
 ### Phase 1: MVP (Week 1) — CURRENT FOCUS
 - [ ] Initialize Next.js 14 project with TypeScript + Tailwind
 - [ ] Set up MongoDB Atlas cluster + Mongoose connection
-- [ ] Create Question model + seed script with 30 questions
+- [ ] Create Question model + seed script with 182 questions
 - [ ] Build GET /api/question/today route
 - [ ] Build GameBoard component (port from prototype)
 - [ ] Build GuessInput with shorthand parsing

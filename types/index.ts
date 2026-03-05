@@ -4,7 +4,6 @@ export type Category =
   | "HUMAN_BODY"
   | "SPACE"
   | "NATURE"
-  | "POP_CULTURE"
   | "HISTORY"
   | "WILD_CARD";
 

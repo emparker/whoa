@@ -2,11 +2,11 @@
 
 ## Context
 
-Extracted from the original Phase 3 and moved ahead of both Phase 4 (Polish) and Phase 3B (MongoDB). The game is fully functional with 30 hardcoded questions — there is no technical reason to wait for MongoDB before deploying. Getting a live URL enables real-device testing and soft launch.
+Extracted from the original Phase 3 and moved ahead of both Phase 4 (Polish) and Phase 3B (MongoDB). The game is fully functional with 182 hardcoded questions (6 months of content) — there is no technical reason to wait for MongoDB before deploying. Getting a live URL enables real-device testing and soft launch.
 
 ## Why Now
 
-- 30 hardcoded questions = 30-day content runway, more than enough for soft launch
+- 182 hardcoded questions = 30-day content runway, more than enough for soft launch
 - No `MONGODB_URI` needed, no connection pool tuning, no cold start risk
 - Real-device testing on iOS Safari / Chrome Android catches issues localhost can't
 - Gives us a shareable URL for Phase 4 QA before soft launch

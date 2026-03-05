@@ -14,7 +14,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
   HUMAN_BODY: "Human Body",
   SPACE: "Space",
   NATURE: "Nature",
-  POP_CULTURE: "Pop Culture",
+
   HISTORY: "History",
   WILD_CARD: "Wild Card",
 };

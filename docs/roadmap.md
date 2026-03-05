@@ -55,10 +55,10 @@ Core game loop with cookie persistence, SSR, 10-second per-guess timer, ReadyScr
 
 **Soft launch first, public launch later.**
 
-The original Phase 3 was split: deployment (3A) was extracted and moved ahead of UX polish (Phase 4). MongoDB (3B) was deferred — 30 hardcoded questions provide sufficient runway for soft launch validation.
+The original Phase 3 was split: deployment (3A) was extracted and moved ahead of UX polish (Phase 4). MongoDB (3B) was deferred — 182 hardcoded questions (6 months) provide sufficient runway for soft launch validation.
 
 ### Rationale
-- 30 hardcoded questions = 30-day content runway, no DB needed yet
+- 182 hardcoded questions = 6-month content runway, no DB needed yet
 - UX polish (Phase 4) has higher user impact than infrastructure (Phase 3B)
 - Soft launch audience (friends/family) will forgive a `.vercel.app` URL but not a janky mobile experience
 - "Come back tomorrow" countdown and `navigator.share()` are the two highest-impact missing features for retention and virality
@@ -159,7 +159,7 @@ Single-letter keys keep size under 250 bytes. Feedback is derived data — recom
 ### Phase 3A: Deploy to Vercel (Hardcoded Questions)
 > Goal: Get a live URL for real-device testing. No MongoDB needed.
 
-Extracted from the original Phase 3. Deployment was decoupled from MongoDB because 30 hardcoded questions are sufficient for soft launch.
+Extracted from the original Phase 3. Deployment was decoupled from MongoDB because 182 hardcoded questions are sufficient for soft launch.
 
 - [x] **Verify production build locally** — `npm run build && npm run start`
 - [x] **Create Vercel project** — connected GitHub repo, Hobby plan, no env vars
@@ -228,7 +228,7 @@ Deferred from the original Phase 3. Not needed until content runway (~30 days fr
 - [ ] **Create `lib/models/Question.ts`** — Mongoose schema with `{ date: 1 }` unique index, `{ questionNumber: 1 }` unique index
 - [ ] **Create `scripts/seed-questions.ts`** — upsert by date, validates no duplicate dates, sequential question numbers
 - [ ] **Add `tsx` dev dependency** and `"seed"` script to package.json
-- [ ] **Seed 30 questions** — run against Atlas cluster, verify in Compass
+- [ ] **Seed 182 questions** — run against Atlas cluster, verify in Compass
 - [ ] **Refactor `app/api/question/today/route.ts`** — query MongoDB instead of hardcoded array, add fallback for missing dates
 - [ ] **Add Cache-Control header** — cache until midnight UTC
 - [ ] **Add rate limiter** — 30 req/min per IP, in-memory Map
